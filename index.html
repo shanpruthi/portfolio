@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Shan Pruthi</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&display=swap" rel="stylesheet" />
+  <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      background: #ffffff;
+      color: #111010;
+      font-family: 'DM Sans', sans-serif;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+    ::selection { background: oklch(0.91 0.10 280 / 0.45); color: #111010; }
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes blink { 0%,100% { opacity:1; } 50% { opacity:0; } }
+    ::-webkit-scrollbar { width: 5px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: #d0cfc9; border-radius: 3px; }
+    @keyframes slideUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+  </style>
+</head>
+<body>
+<div id="root"></div>
+
+<script type="text/babel">
+
+
+const { useState, useEffect, useRef, useCallback } = React;
+
+/* ─── Scroll-reactive background ─── */
+function BackgroundGlow() {
+  const ref = useRef(null);
+  useEffect(() => {
+    let raf;
+    let scrollY = window.scrollY;
+    let currentY = 0;
+    const start = performance.now();
+    const onScroll = () => {scrollY = window.scrollY;};
+    window.addEventListener('scroll', onScroll, { passive: true });
+    const tick = () => {
+      currentY += (scrollY - currentY) * 0.05;
+      if (ref.current) {
+        const pct = Math.min(currentY / Math.max(document.body.scrollHeight - window.innerHeight, 1), 1);
+        const t = (performance.now() - start) / 1000;
+        // Slow drifting offsets so the orbs breathe even when not scrolling
+        const dx1 = Math.sin(t * 0.18) * 8;
+        const dy1 = Math.cos(t * 0.15) * 6;
+        const dx2 = Math.cos(t * 0.13) * 9;
+        const dy2 = Math.sin(t * 0.17) * 7;
+        // Orb 1: top-right, warm lavender → shifts left and down
+        const x1 = 80 - pct * 35 + dx1;
+        const y1 = 10 + pct * 20 + dy1;
+        // Orb 2: bottom-left, soft teal → shifts right and up
+        const x2 = 20 + pct * 30 + dx2;
+        const y2 = 90 - pct * 30 + dy2;
+        // Soft lavender (matches selection highlight) — tiny live hue wander for life
+        const hue1 = 280 + Math.sin(t * 0.1) * 6;
+        const hue2 = 280 + Math.cos(t * 0.09) * 6;
+        ref.current.style.background = [
+        `radial-gradient(ellipse 65vw 45vh at ${x1}% ${y1}%, oklch(0.91 0.10 ${hue1} / 0.70) 0%, transparent 70%)`,
+        `radial-gradient(ellipse 60vw 50vh at ${x2}% ${y2}%, oklch(0.91 0.10 ${hue2} / 0.55) 0%, transparent 70%)`].
+        join(', ');
+      }
+      raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => {cancelAnimationFrame(raf);window.removeEventListener('scroll', onScroll);};
+  }, []);
+  return (
+    <div ref={ref} style={{
+      position: 'fixed', inset: 0, zIndex: 0, pointerEvents: 'none',
+      background: `radial-gradient(ellipse 65vw 45vh at 80% 10%, oklch(0.91 0.10 280 / 0.70) 0%, transparent 70%),
+                  radial-gradient(ellipse 60vw 50vh at 20% 90%, oklch(0.91 0.10 280 / 0.55) 0%, transparent 70%)`
+    }} />);
+
+}
+
+function Nav() {
+  const [scrolled, setScrolled] = useState(false);
+  useEffect(() => {
+    const fn = () => setScrolled(window.scrollY > 30);
+    window.addEventListener('scroll', fn, { passive: true });
+    return () => window.removeEventListener('scroll', fn);
+  }, []);
+  return (
+    <nav style={{
+      position: 'fixed', top: 0, left: 0, right: 0, zIndex: 100,
+      height: '56px', padding: '0 48px',
+      display: 'flex', alignItems: 'center', justifyContent: 'flex-end',
+      borderBottom: scrolled ? '1px solid #e8e6df' : '1px solid transparent',
+      background: scrolled ? 'rgba(255,255,255,0.9)' : 'transparent',
+      backdropFilter: scrolled ? 'blur(16px)' : 'none',
+      transition: 'background 0.3s, border-color 0.3s'
+    }}>
+      <div style={{ display: 'flex', gap: '28px', alignItems: 'center' }}>
+        {[['LinkedIn', 'https://www.linkedin.com/in/shanpruthi/'], ['GitHub', 'https://github.com/shanpruthi'], ['X', 'https://x.com/shanpruthi']].map(([l, h]) =>
+        <a key={l} href={h} target="_blank" rel="noreferrer" style={{ fontSize: '13px', color: '#666', textDecoration: 'none', letterSpacing: '0.015em' }}
+        onMouseEnter={(e) => e.target.style.color = '#111'}
+        onMouseLeave={(e) => e.target.style.color = '#666'}>{l}</a>
+        )}
+      </div>
+    </nav>);
+
+}
+
+/* ─── Bio Section ─── */
+const DEFAULT_BIO = `Shan Pruthi is a Senior Product Manager at LinkedIn, where he leads 0-to-1 generative AI on Search — building semantic people search that helps members find the right connections using natural language. Over six years, he has shipped products that grew LinkedIn Newsletters from 20M to 1B subscriptions, architected a multi-agent platform that cut development time from months to days, and built recruiter tools that drove a 33% lift in qualified applicants.`;
+
+function BioSection() {
+  return (
+    <section id="about" style={{ padding: '120px 48px 64px', maxWidth: '720px', margin: '0 auto' }}>
+      <div style={{ paddingTop: '64px' }}>
+        <div style={{ position: 'relative', marginBottom: '48px' }}>
+          <div style={{
+            fontFamily: 'DM Sans',
+            fontSize: 'clamp(15px, 1.4vw, 17px)',
+            lineHeight: 1.75,
+            color: '#111010',
+            maxWidth: '100%',
+            textWrap: 'pretty'
+          }}>
+            <h1 style={{ fontFamily: 'DM Sans', fontSize: 'clamp(28px, 3vw, 36px)', fontWeight: 600, letterSpacing: '-0.02em', color: '#111', margin: '0 0 24px' }}>Hi, I'm Shan.</h1>
+            <p style={{ marginBottom: '1em' }}>I'm a PM and AI-first builder. I spent the last few years at LinkedIn, most recently building the future of search.</p>
+            <p style={{ margin: 0 }}>In general, I'm optimistic, curious, and enjoy working on hard problems with awesome people. If that sounds like you, I'd love to <a href="https://calendly.com/shanpruthi/20min" target="_blank" rel="noreferrer" style={{ color: '#777', borderBottom: '1px solid #ccc', textDecoration: 'none' }} onMouseEnter={(e) => {e.target.style.color = '#111';e.target.style.borderBottomColor = '#111';}} onMouseLeave={(e) => {e.target.style.color = '#777';e.target.style.borderBottomColor = '#ccc';}}>get in touch</a>.</p>
+          </div>
+        </div>
+      </div>
+    </section>);
+
+}
+
+/* ─── Work Items ─── */
+const LINK_STYLE = `color:#777;border-bottom:1px solid #ccc;text-decoration:none`;
+const LINK_HOVER = `onmouseenter="this.style.color='#111';this.style.borderBottomColor='#111'" onmouseleave="this.style.color='#777';this.style.borderBottomColor='#ccc'"`;
+const inlineLink = (href, text) => `<a href="${href}" target="_blank" rel="noreferrer" style="${LINK_STYLE}" ${LINK_HOVER}>${text}</a>`;
+
+const ITEMS = [
+{
+  id: 'kitr', year: 'April 2026', title: 'The Kit Room', tag: 'Personal',
+  detail: `A way for footy fans to discover, catalog and find trends with their soccer jersey collection. Fun vibe coding project.`,
+  link: 'https://the-kit-room.vercel.app/', linkLabel: '',
+  customTitle: true,
+  image: 'assets/kitroom.png'
+},
+{
+  id: 'search', year: 'Dec 2025', title: 'AI-powered People Search', tag: 'Work',
+  detail: `Made it easier to find the right person with semantic search. Learned a ton about ${inlineLink('https://www.linkedin.com/pulse/job-has-changed-rohan-rajiv-4moze', 'LLM recommender systems')}.`,
+  link: 'https://www.linkedin.com/feed/update/urn:li:activity:7394766066650066944/', linkLabel: '',
+  image: 'assets/ai-people-search.gif',
+  customTitle: true
+},
+{
+  id: 'nycm', year: 'Nov 2025', title: 'NYC Marathon', tag: 'Personal',
+  detail: `Year one as a runner and also a marathoner. Ran with ${inlineLink('https://www.aaja.org/', 'AAJA')} and felt so grateful for family and friends.`,
+  link: 'https://drive.google.com/drive/folders/1z6B1h9Wd3cJXSqizU5n6wUvAV2JLhqpd?usp=sharing', linkLabel: '',
+  customTitle: true,
+  image: 'assets/marathon.png'
+},
+{
+  id: 'guide', year: 'June 2025', title: 'Enterprise Agents', tag: 'Work',
+  detail: `Piloted and launched a multi-agent platform for sellers, job seekers, and recruiters. Failed a bunch. Learned a bunch.`,
+  image: 'assets/agents.png'
+},
+{
+  id: 'newsletters', year: '2023-2024', title: 'LinkedIn Newsletters', tag: 'Work',
+  detail: `Helped creators grow their audience with newsletters. Personal favorite: ${inlineLink('https://www.linkedin.com/newsletters/what-s-the-so-what%3F-6767254695498014720/', `&quot;What's the So What?&quot;`)} by James Raybould.`,
+  link: 'https://www.niemanlab.org/2023/12/how-13-news-outlets-use-linkedin-newsletters/', linkLabel: '',
+  customTitle: true,
+  imagePlaceholder: '#e6eef0',
+  image: 'assets/newsletters.png?v=4'
+},
+{
+  id: 'desi', year: 'Oct 2022', title: "It's All Desi", tag: 'Personal',
+  detail: `South Asian culture, community, and what it means to exist in the diaspora. Helped me learn more about myself and how I write.`,
+  link: 'https://www.linkedin.com/newsletters/it-s-all-desi-6982916801873465344/', linkLabel: '',
+  customTitle: true,
+  image: 'assets/desi.png?v=2'
+},
+{
+  id: '826nyc', year: '2021-2022', title: '826NYC', tag: 'Personal',
+  detail: `Volunteered with a great organization focused on creative writing workshops for kids. Designed and edited a few of their ${inlineLink('https://www.superherosupplies.com/products/inside-the-teenage-mind?srsltid=AfmBOoptUyB8cIqcw7Wcflr8p7f72smvWztomkyEgEkP4O7uVjYr5Mts', 'books')}.`,
+  link: 'https://826nyc.org/', linkLabel: '',
+  customTitle: true,
+  image: 'assets/826nyc.jpeg?v=4'
+},
+{
+  id: 'hired', year: '2019-2021', title: 'Helping people get hired', tag: 'Work',
+  detail: `Launched enterprise tools to help recruiters target the right profiles and learned about ${inlineLink('https://www.linkedin.com/help/linkedin/answer/a506429', 'resume parsing models')}.`,
+  image: 'assets/hired.png'
+},
+{
+  id: 'rfq', year: 'April 2018', title: 'Request a Quote', tag: 'Work',
+  detail: `Worked on a few experiments to help people compare prices across service businesses.`,
+  link: 'https://business.yelp.com/services/products/request-a-quote/', linkLabel: '',
+  customTitle: true,
+  image: 'assets/yelp-rfq.png'
+},
+{
+  id: 'uwpm', year: '2016-2020', title: 'UW Product Management', tag: 'Personal',
+  detail: `Organized workshops, conferences, and ${inlineLink('https://open.spotify.com/show/4bjMhUJIKYlAl0nCjQCqGv?si=213e823f9b9d4e9b', 'content hubs')} for people to learn about product. Excited about the next generation of Waterloo kids.`,
+  link: 'https://uwpm.substack.com/', linkLabel: '',
+  customTitle: true,
+  image: 'assets/uwpm.jpg'
+}];
+
+
+function ItemRow({ item }) {
+  return (
+    <div style={{ padding: '24px 0', borderTop: '1px solid #eeece8' }}>
+      {item.year &&
+      <p style={{
+        fontSize: '12px', color: '#888', fontVariantNumeric: 'tabular-nums',
+        letterSpacing: '0.02em', marginBottom: '6px', lineHeight: 1.4
+      }}>
+        {item.year}
+        {item.tag && <><span style={{ margin: '0 8px' }}>·</span>{item.tag}</>}
+      </p>
+      }
+      <div>
+      <p style={{ fontSize: 'clamp(15px, 1.4vw, 17px)', color: '#444', lineHeight: 1.75 }}>
+        {item.link && (item.id === 'search' || item.customTitle) ?
+          <a href={item.link} target="_blank" rel="noreferrer"
+          style={{ color: '#111', fontWeight: 600, borderBottom: '1px solid #ddd', textDecoration: 'none' }}
+          onMouseEnter={(e) => e.target.style.borderBottomColor = '#111'}
+          onMouseLeave={(e) => e.target.style.borderBottomColor = '#ddd'}>
+            {item.title}
+          </a> :
+
+          <strong style={{ color: '#111', fontWeight: 600 }}>{item.title}</strong>
+          }
+        {' — '}
+        <span dangerouslySetInnerHTML={{ __html: item.detail }} />
+        {item.link && item.linkLabel && item.id !== 'search' && !item.customTitle &&
+          <> <a href={item.link} target="_blank" rel="noreferrer" style={{
+              color: '#777', textDecoration: 'none', borderBottom: '1px solid #ccc', paddingBottom: '1px', fontSize: '13px'
+            }}
+            onMouseEnter={(e) => {e.target.style.color = '#111';e.target.style.borderBottomColor = '#111';}}
+            onMouseLeave={(e) => {e.target.style.color = '#777';e.target.style.borderBottomColor = '#ccc';}}>
+            {item.linkLabel}
+          </a></>
+          }
+      </p>
+        </div>
+      {item.image &&
+      <div style={{ marginTop: '16px', borderRadius: '8px', overflow: 'hidden', background: 'transparent' }}>
+          <img src={item.image} alt={item.title} style={{ width: '100%', display: 'block' }} />
+        </div>
+      }
+      {!item.image && item.imagePlaceholder &&
+      <div style={{
+        marginTop: '16px', borderRadius: '8px',
+        background: item.imagePlaceholder,
+        height: '200px',
+        display: 'flex', alignItems: 'center', justifyContent: 'center'
+      }}>
+          <span style={{ fontFamily: 'DM Sans', fontSize: '11px', letterSpacing: '0.1em', textTransform: 'uppercase', color: 'rgba(0,0,0,0.2)' }}>Image</span>
+        </div>
+      }
+    </div>);
+
+}
+
+function WorkSection() {
+  return (
+    <section id="work" style={{ padding: '0 48px 80px', maxWidth: '720px', margin: '0 auto' }}>
+      <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: '40px' }}>
+        <h2 style={{ fontFamily: 'DM Sans', fontSize: '22px', fontWeight: 600, letterSpacing: '-0.01em', color: '#111', margin: 0 }}>Work & Personal</h2>
+      </div>
+      <div>
+        {ITEMS.map((item) => <ItemRow key={item.id} item={item} />)}
+        <div style={{ borderTop: '1px solid #e8e6df' }} />
+      </div>
+    </section>);
+
+}
+
+/* ─── Footer ─── */
+function Footer() {
+  return (
+    <footer id="contact" style={{
+      borderTop: '1px solid #e8e6df',
+      padding: '36px 48px',
+      maxWidth: '720px', margin: '0 auto',
+      display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+      position: 'relative', zIndex: 1
+    }}>
+      <span style={{ fontFamily: 'DM Sans', fontSize: '14px', color: '#bbb' }}>Shan Pruthi · 2026</span>
+      <div style={{ display: 'flex', gap: '28px' }}>
+        {[['Email', 'mailto:shanpruthi@gmail.com'], ['LinkedIn', 'https://www.linkedin.com/in/shanpruthi/'], ['X', 'https://x.com/shanpruthi']].map(([l, h]) =>
+        <a key={l} href={h} style={{ fontSize: '13px', color: '#999', textDecoration: 'none' }}
+        onMouseEnter={(e) => e.target.style.color = '#111'}
+        onMouseLeave={(e) => e.target.style.color = '#999'}>{l}</a>
+        )}
+      </div>
+    </footer>);
+
+}
+
+/* ─── App ─── */
+function App() {
+  return (
+    <div style={{ animation: 'fadeUp 0.7s cubic-bezier(0.22,1,0.36,1) both' }}>
+      <BackgroundGlow />
+      <Nav />
+      <main style={{ position: 'relative', zIndex: 1 }}>
+        <BioSection />
+        <WorkSection />
+      </main>
+    </div>);
+
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+</body>
+</html>
