@@ -273,14 +273,64 @@ function ItemRow({ item }) {
 
 }
 
+const WORK_FILTER_OPTIONS = [
+{ id: 'all', label: 'All' },
+{ id: 'work', label: 'Work' },
+{ id: 'personal', label: 'Personal' }];
+
 function WorkSection() {
+  const [workFilter, setWorkFilter] = useState('all');
+  const filteredItems = ITEMS.filter((item) => {
+    if (workFilter === 'all') return true;
+    if (workFilter === 'work') return item.tag === 'Work';
+    if (workFilter === 'personal') return item.tag === 'Personal';
+    return true;
+  });
   return (
     <section id="work" style={{ padding: '0 48px 80px', maxWidth: '720px', margin: '0 auto' }}>
-      <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: '40px' }}>
+      <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: '16px' }}>
         <h2 style={{ fontFamily: 'DM Sans', fontSize: '22px', fontWeight: 600, letterSpacing: '-0.01em', color: '#111', margin: 0 }}>Work & Personal</h2>
       </div>
+      <div
+        role="group"
+        aria-label="Filter projects by category"
+        style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginBottom: '32px' }}
+      >
+        {WORK_FILTER_OPTIONS.map(({ id, label }) => {
+          const active = workFilter === id;
+          return (
+            <button
+              key={id}
+              type="button"
+              aria-pressed={active}
+              onClick={() => setWorkFilter(id)}
+              style={{
+                fontFamily: 'DM Sans',
+                fontSize: '13px',
+                letterSpacing: '0.015em',
+                cursor: 'pointer',
+                border: '1px solid ' + (active ? '#d0cec7' : '#e8e6df'),
+                borderRadius: '6px',
+                padding: '6px 14px',
+                background: active ? '#f3f2ee' : '#fff',
+                color: active ? '#111' : '#666',
+                fontWeight: active ? 500 : 400,
+                transition: 'color 0.2s, background 0.2s, border-color 0.2s'
+              }}
+              onMouseEnter={(e) => {
+                if (!active) { e.target.style.color = '#111'; e.target.style.borderColor = '#d0cec7'; }
+              }}
+              onMouseLeave={(e) => {
+                if (!active) { e.target.style.color = '#666'; e.target.style.borderColor = '#e8e6df'; }
+              }}
+            >
+              {label}
+            </button>
+          );
+        })}
+      </div>
       <div>
-        {ITEMS.map((item) => <ItemRow key={item.id} item={item} />)}
+        {filteredItems.map((item) => <ItemRow key={item.id} item={item} />)}
         <div style={{ borderTop: '1px solid #e8e6df' }} />
       </div>
     </section>);
