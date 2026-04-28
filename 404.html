@@ -66,23 +66,11 @@
       align-self: flex-start;
       margin: -11px 0 0;
       padding: 0;
-      max-height: calc(100vh - 72px);
-      overflow-y: auto;
-      overflow-x: hidden;
-      -webkit-overflow-scrolling: touch;
-      scrollbar-width: thin;
-      scrollbar-color: #d4d2cc transparent;
+      overflow: visible;
     }
     .portfolio-sidebar nav {
       margin: 0;
       padding: 0;
-    }
-    .portfolio-sidebar::-webkit-scrollbar {
-      width: 4px;
-    }
-    .portfolio-sidebar::-webkit-scrollbar-thumb {
-      background: #d4d2cc;
-      border-radius: 4px;
     }
     .portfolio-main {
       flex: 1 1 960px;
@@ -242,30 +230,21 @@
         top: auto;
         width: 100%;
         margin-top: 0;
-        max-height: none;
-        overflow-y: visible;
-        overflow-x: visible;
+        overflow: visible;
       }
       .side-nav-list {
         flex-direction: row;
-        flex-wrap: nowrap;
+        flex-wrap: wrap;
         align-items: center;
-        gap: 0;
-        overflow-x: auto;
-        overflow-y: hidden;
-        -webkit-overflow-scrolling: touch;
-        scrollbar-width: none;
+        gap: 10px 16px;
+        overflow: visible;
         padding-bottom: 12px;
         border-bottom: 1px solid #e8e6df;
-      }
-      .side-nav-list::-webkit-scrollbar {
-        display: none;
       }
       .side-nav-pages,
       .side-nav-social {
         flex-direction: row;
-        flex-wrap: nowrap;
-        flex-shrink: 0;
+        flex-wrap: wrap;
         align-items: center;
         gap: 16px;
       }
@@ -283,6 +262,9 @@
         white-space: nowrap;
         flex-shrink: 0;
         padding: 6px 0;
+      }
+      .about-portrait {
+        margin-top: 12px;
       }
     }
   </style>
