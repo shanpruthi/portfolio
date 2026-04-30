@@ -455,58 +455,6 @@
       color: var(--text);
       border-bottom-color: var(--text);
     }
-    .notes-stack {
-      display: flex;
-      flex-direction: column;
-      gap: clamp(36px, 6vw, 52px);
-    }
-    /* Match .project-card-desc / .project-card-title (Projects page) */
-    .notes-prose {
-      font-family: var(--font-sans);
-      font-size: clamp(13px, 1.25vw, 15px);
-      line-height: 1.75;
-      color: var(--text);
-      text-wrap: pretty;
-    }
-    .notes-prose .notes-entry-title {
-      font-family: var(--font-sans);
-      font-size: clamp(13px, 1.25vw, 15px);
-      font-weight: 600;
-      color: var(--text);
-      margin: 0 0 6px;
-      line-height: 1.75;
-    }
-    .notes-entry {
-      margin: 0;
-      padding: 0;
-      background: transparent;
-      border: none;
-      border-radius: 0;
-    }
-    .notes-entry-body {
-      margin: 0;
-    }
-    .notes-entry-media {
-      margin: 0;
-    }
-    .notes-entry-media img {
-      width: 100%;
-      max-width: min(100%, 440px);
-      height: auto;
-      display: block;
-      border-radius: 8px;
-      border: 1px solid var(--border);
-    }
-    .notes-prose .notes-entry-list {
-      margin: 0;
-      padding-left: 1.1em;
-    }
-    .notes-prose .notes-entry-list li {
-      margin-bottom: 0.32em;
-    }
-    .notes-prose .notes-entry-list li:last-child {
-      margin-bottom: 0;
-    }
     .project-meta {
       font-size: 11px;
       color: var(--text-muted);
@@ -537,7 +485,6 @@ function routeFromPath() {
   let path = window.location.pathname.replace(/\/$/, '');
   if (path.endsWith('/index.html')) path = path.slice(0, -'/index.html'.length);
   if (path.endsWith('/projects')) return 'projects';
-  if (path.endsWith('/notes')) return 'notes';
   return 'about';
 }
 
@@ -547,7 +494,7 @@ function routeFromHash() {
   const h = hash.slice(1).replace(/^\//, '').split('?')[0];
   if (h === '' || h === 'about') return 'about';
   if (h === 'projects') return 'projects';
-  if (h === 'notes') return 'notes';
+  if (h === 'notes') return 'about';
   return null;
 }
 
@@ -564,7 +511,6 @@ function hrefForRoute(route) {
 function titleForRoute(route) {
   const t = 'Shan Pruthi';
   if (route === 'projects') return t + ' · Projects';
-  if (route === 'notes') return t + ' · Random Notes';
   return t;
 }
 
@@ -580,7 +526,7 @@ const PAGE_HEADLINE_STYLE = {
 
 const ABOUT_HEADLINE_STYLE = {
   ...PAGE_HEADLINE_STYLE,
-  margin: '0 0 8px'
+  margin: '0 0 20px'
 };
 
 const BODY_TEXT_STYLE = {
@@ -614,7 +560,6 @@ function SideNav({ route, navigate }) {
         <div className="side-nav-pages">
           {navLink('about', 'About')}
           {navLink('projects', 'Projects')}
-          {navLink('notes', 'Random Notes')}
         </div>
         <div className="side-nav-social">
           <a href="https://www.linkedin.com/in/shanpruthi/" target="_blank" rel="noreferrer" className="side-nav-link">
@@ -656,63 +601,6 @@ function BioSection() {
           </a>
           .
         </p>
-      </div>
-    </section>);
-
-}
-
-/* ─── Notes ─── */
-function NotesSection() {
-  return (
-    <section id="notes" className="main-content" style={{ padding: '0 0 48px', scrollMarginTop: '32px' }}>
-      <h2 style={PAGE_HEADLINE_STYLE}>Random Notes</h2>
-      <div className="notes-stack notes-prose">
-        <article className="notes-entry">
-          <h3 className="notes-entry-title">Qualities I value</h3>
-          <ul className="notes-entry-list">
-            <li>
-              Low ego — people that do things for the right reasons, look out for each other, and care deeply.
-            </li>
-            <li>
-              Effective communication — being straightforward, clear, and concise goes a long way.
-            </li>
-            <li>
-              Intrinsic motivation — going the extra mile and trying your best because it helps you learn and grow.
-            </li>
-          </ul>
-        </article>
-        <article className="notes-entry">
-          <h3 className="notes-entry-title">Meaning Crisis with AI</h3>
-          <p className="notes-entry-body">
-            There is a feeling of fulfillment I get from work – rooted in purpose and identity. I wonder how AI might change what work means for the technology industry + how it’ll impact what I spend my time on day-to-day.
-          </p>
-        </article>
-        <article className="notes-entry">
-          <h3 className="notes-entry-title">Following the fun</h3>
-          <p className="notes-entry-body">
-            A quote from Childish Gambino that I love —{' '}
-            <em>
-              I'm just following the fun. Whatever feels good and an interesting thing at the time, I'm going to go with that. Most people are afraid to do that.
-            </em>
-          </p>
-        </article>
-        <article className="notes-entry">
-          <h3 className="notes-entry-title">An old gem</h3>
-          <div className="notes-entry-media">
-            <img
-              src="assets/note-old-gem.png"
-              alt="Screenshot of an X post by Shan: LADIES AND GENTLEMEN life is all about showing up"
-              loading="lazy"
-              decoding="async"
-            />
-          </div>
-        </article>
-        <article className="notes-entry">
-          <h3 className="notes-entry-title">The best Product Managers</h3>
-          <p className="notes-entry-body">
-            Such a fun job but difficult to master. It starts with what you launched (the impact) and how you went about it (the agency). The best PMs I've worked with are masters at both. 
-          </p>
-        </article>
       </div>
     </section>);
 
@@ -1036,7 +924,9 @@ function App() {
   useLayoutEffect(() => {
     const base = window.location.pathname + window.location.search;
     const h = window.location.hash;
-    if (!h || h === '#') {
+    if (/#\/notes/.test(h)) {
+      history.replaceState(null, '', base + '#/about');
+    } else if (!h || h === '#') {
       history.replaceState(null, '', base + '#/about');
     }
   }, []);
@@ -1065,7 +955,6 @@ function App() {
           >
             {route === 'about' && <BioSection />}
             {route === 'projects' && <WorkSection />}
-            {route === 'notes' && <NotesSection />}
           </main>
         </div>
       </div>
